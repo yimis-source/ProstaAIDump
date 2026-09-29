@@ -1,0 +1,33 @@
+# Entornos y dependencias
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Configuración local y secretos
+.env
+.env.*
+!.env.example
+
+# Datos descargados y derivados (nunca se versionan)
+/datos/
+*.nii
+*.nii.gz
+*.mhd
+*.raw
+*.dcm
+*.zip
+*.tar
+
+# Cachés de pruebas
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Sistema operativo y editores
+.DS_Store
+._*
+*.swp
+.idea/
+.vscode/
