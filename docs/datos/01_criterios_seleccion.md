@@ -5,7 +5,7 @@
 | Sprint | 1 · Adquisición y comprensión de datos |
 | Responsable | Juan David Riascos Erazo (Analista) |
 | Revisa | Fernando José Angulo Núñez (Tester), Yimis Buenaventura (Director) |
-| Versión | 1.0 · 14/10/2026 |
+| Versión | 1.1 · 15/10/2026 |
 
 Define qué estudios de resonancia magnética de próstata sirven para Prosta-AI. Se aplica a cada conjunto candidato (tarea 1202) y luego a cada caso dentro del conjunto elegido (tarea 1301).
 
@@ -27,8 +27,9 @@ Define qué estudios de resonancia magnética de próstata sirven para Prosta-AI
 |---|---|
 | CE-1 | Estudios sin máscara (p. ej. `imagesTs` del MSD): solo sirven para pruebas manuales de la aplicación, no para entrenar ni evaluar |
 | CE-2 | Archivos dañados, truncados o con geometría incoherente entre imagen y máscara |
-| CE-3 | Conjuntos que exigen acuerdo de uso con datos clínicos identificables o aprobación de comité de ética |
-| CE-4 | Conjuntos con licencia que prohíbe trabajos derivados o uso fuera del reto original, salvo como referencia |
+| CE-3 | Estudios duplicados entre conjuntos (el mismo paciente publicado en dos repositorios) |
+| CE-4 | Conjuntos que exigen acuerdo de uso con datos clínicos identificables o aprobación de comité de ética |
+| CE-5 | Conjuntos con licencia que prohíbe trabajos derivados o uso fuera del reto original, salvo como referencia |
 
 ## 3. Criterios deseables (no excluyentes)
 
@@ -42,3 +43,4 @@ Define qué estudios de resonancia magnética de próstata sirven para Prosta-AI
 | Versión | Fecha | Cambio |
 |---|---|---|
 | 1.0 | 14/10/2026 | Primera versión |
+| 1.1 | 15/10/2026 | Se agrega CE-3 (duplicados entre conjuntos) por observación del Tester |
