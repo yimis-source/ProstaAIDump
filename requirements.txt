@@ -1,0 +1,4 @@
+numpy>=1.26
+SimpleITK>=2.3
+nibabel>=5.2
+pytest>=8.0
