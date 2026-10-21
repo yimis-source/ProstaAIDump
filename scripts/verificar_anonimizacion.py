@@ -90,8 +90,9 @@ def revisar_nombre(ruta: Path, raiz: Path) -> list[str]:
 def archivos(raiz: Path):
     for patron in ("**/*.nii.gz", "**/*.mhd"):
         for ruta in sorted(raiz.glob(patron)):
-            if not ruta.name.startswith("."):
-                yield ruta
+            if ruta.name.startswith(".") or "convertidas" in ruta.parts:
+                continue  # restos de macOS y salidas locales de conversión
+            yield ruta
 
 
 def main() -> int:
