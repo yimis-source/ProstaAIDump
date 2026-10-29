@@ -2,7 +2,7 @@
 
 Un caso se descarta si alguna verificación falla. Las verificaciones son:
 
-1. La imagen y la máscara se pueden leer (archivo no dañado ni truncado).
+1. La imagen y la máscara están completas y se pueden leer (no dañadas ni truncadas).
 2. La imagen es 3D (o 4D con canal T2) y tiene al menos 8 cortes.
 3. No hay valores NaN/Inf y la imagen no es constante.
 4. La máscara tiene la misma geometría (tamaño, espaciado, origen) que la imagen.
@@ -10,7 +10,10 @@ Un caso se descarta si alguna verificación falla. Las verificaciones son:
 """
 from __future__ import annotations
 
+import gzip
+import zlib
 from dataclasses import dataclass, field
+from pathlib import Path
 
 import numpy as np
 import SimpleITK as sitk
@@ -32,6 +35,37 @@ class ResultadoCalidad:
         return not self.errores
 
 
+def archivo_integro(ruta: Path) -> bool:
+    """Comprueba que el archivo esté completo.
+
+    SimpleITK puede leer un .nii.gz truncado sin error (rellena con ceros), así que
+    se descomprime el flujo completo; en .mhd se compara el tamaño del .raw con el
+    que declara la cabecera.
+    """
+    ruta = Path(ruta)
+    try:
+        if ruta.name.endswith(".gz"):
+            with gzip.open(ruta, "rb") as f:
+                while f.read(1 << 20):
+                    pass
+        elif ruta.suffix == ".mhd":
+            cab = dict(
+                (k.strip(), v.strip())
+                for k, v in (l.split("=", 1) for l in ruta.read_text().splitlines() if "=" in l)
+            )
+            if cab.get("CompressedData", "False") == "True":
+                return True
+            bytes_tipo = {"MET_SHORT": 2, "MET_USHORT": 2, "MET_UCHAR": 1, "MET_CHAR": 1,
+                          "MET_FLOAT": 4, "MET_INT": 4, "MET_UINT": 4, "MET_DOUBLE": 8}
+            esperado = bytes_tipo[cab["ElementType"]]
+            for n in cab["DimSize"].split():
+                esperado *= int(n)
+            return (ruta.parent / cab["ElementDataFile"]).stat().st_size == esperado
+    except (OSError, EOFError, zlib.error, KeyError, ValueError):
+        return False
+    return True
+
+
 def leer_t2(caso: Caso) -> sitk.Image:
     img = sitk.ReadImage(str(caso.imagen))
     if img.GetDimension() == 4:
@@ -49,6 +83,9 @@ def _misma_geometria(a: sitk.Image, b: sitk.Image) -> bool:
 
 def revisar(caso: Caso) -> ResultadoCalidad:
     r = ResultadoCalidad(caso)
+    if not archivo_integro(caso.imagen):
+        r.errores.append("imagen ilegible: archivo truncado o dañado")
+        return r
     try:
         img = leer_t2(caso)
     except Exception as exc:  # archivo dañado o formato no reconocido
@@ -64,6 +101,9 @@ def revisar(caso: Caso) -> ResultadoCalidad:
 
     if caso.mascara is None or not caso.mascara.is_file():
         r.errores.append("falta la máscara de referencia")
+        return r
+    if not archivo_integro(caso.mascara):
+        r.errores.append("máscara ilegible: archivo truncado o dañado")
         return r
     try:
         msk = sitk.ReadImage(str(caso.mascara))
