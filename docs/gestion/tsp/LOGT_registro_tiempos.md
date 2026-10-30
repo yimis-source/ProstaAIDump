@@ -35,3 +35,41 @@ Las horas son de trabajo efectivo en la tarea; no incluyen clases ni esperas de 
 | Fernando | 7,0 |
 | Yimis | 7,0 |
 | Sergio | 3,0 |
+
+## Ciclo 2 (26/10 – 30/10/2026)
+
+| Fecha | Integrante | Tarea | Horas | Nota |
+|---|---|---|---|---|
+| 26/10 | Todos | Postmortem del Ciclo 1 y lanzamiento del Ciclo 2 | 1,5 c/u | Fuera del total de tareas |
+| 26/10 | Yimis | 1306 | 6,0 | |
+| 26–27/10 | Yeison | 1301 | 3,0 | Primera versión del control de calidad |
+| 27/10 | Yeison | 1302 | 8,0 | Incluye la lectura uniforme de fuentes |
+| 27/10 | Fernando | 1301 | 3,0 | Pruebas; detecta D-04 |
+| 27–28/10 | Sergio | 1307 | 8,0 | Pantallas CU00–CU06 |
+| 28/10 | Juan | 1303 | 4,0 | |
+| 28/10 | Yeison | 1301 | 2,0 | Corrección de D-04 |
+| 28/10 | Yeison | 1305 | 4,0 | |
+| 28–29/10 | Fernando | Pruebas (pytest) | 6,0 | Transformaciones y división |
+| 29/10 | Fernando | 1304 | 7,0 | Verificación de fuga e informe |
+| 29/10 | Fernando | 1301 | 3,0 | Informe de control de calidad |
+| 29/10 | Sergio | 1307 | 4,0 | Documento de interfaz |
+| 29/10 | Yeison | 1308 | 5,0 | |
+| 29/10 | Juan | 1309 | 5,0 | |
+| 30/10 | Yimis | 1310 | 4,0 | |
+| | | **Total del ciclo** | **72,0** | Plan: 64,0 |
+
+| Integrante | Horas |
+|---|---|
+| Yeison | 22,0 |
+| Fernando | 19,0 |
+| Sergio | 12,0 |
+| Yimis | 10,0 |
+| Juan | 9,0 |
+
+## Acumulado del proyecto
+
+| Ciclo | Plan | Real | Desviación |
+|---|---|---|---|
+| 1 | 51,0 | 60,0 | +17,6 % |
+| 2 | 64,0 | 72,0 | +12,5 % |
+| **Total** | **115,0** | **132,0** | **+14,8 %** |
