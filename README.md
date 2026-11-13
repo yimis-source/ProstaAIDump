@@ -13,7 +13,10 @@ Proyecto del curso Gestión de Proyectos de TI, Universidad Santiago de Cali, 20
 | `v0.1-ciclo1` | 25/10/2026 | Datos elegidos, licencias, inventario, anonimización, geometría, revisión en 3D Slicer e informe de datos |
 | `v0.2-ciclo2` | 30/10/2026 | Control de calidad, formato unificado NIfTI, división por paciente, verificación de fuga, script de preprocesamiento y diseño (arquitectura, pantallas, módulo de IA y base de datos) |
 
-Siguiente: Ciclo 3 (13/11/2026), segmentación 3D, modelo e inferencia.
+| `v0.3-ciclo3` | 12/11/2026 | Cadena de segmentación 3D, modelo `prostate_mri_anatomy` (Dice 0,8925 en prueba), ajuste fino preparado y medición de inferencia en CPU (≤ 25 s) |
+| `v0.4-ciclo4` | 12/11/2026 | Región de interés: volumen, cortes, centroide, superposición con explicación y aviso, integrada en la cadena (en paralelo con el Ciclo 3 desde el 03/11; plan: 14–20/11) |
+
+Siguiente: Ciclo 5 (25/11/2026), evaluación técnica. Ciclos 6 (aplicación web) y 7 (cierre) pendientes.
 
 ## Equipo
 
@@ -33,6 +36,8 @@ Desarrollo con **TSP (Team Software Process)** en 7 ciclos incrementales: cada c
 |---|---|---|---|
 | 1 | 51 h | 60 h | 3 (cerrados) |
 | 2 | 64 h | 72 h | 1 (cerrado) |
+| 3 | 51 h | 56 h | 2 (cerrados) |
+| 4 | 36 h | 39 h | 3 (cerrados) |
 
 ## Flujo de trabajo
 
@@ -48,6 +53,9 @@ python -m venv .venv && .venv/bin/pip install -r requirements.txt
 .venv/bin/python -m preprocesamiento.preprocesar --fuente msd
 .venv/bin/python -m entrenamiento.division
 .venv/bin/python scripts/verificar_fuga.py
+.venv/bin/python scripts/descargar_modelo.py
+.venv/bin/python -m entrenamiento.evaluar --modelo prostate_mri_anatomy
+.venv/bin/python scripts/generar_roi.py --imagen <estudio.nii.gz> --modelo prostate_mri_anatomy --salida <carpeta>
 .venv/bin/python -m pytest
 ```
 
@@ -58,6 +66,10 @@ python -m venv .venv && .venv/bin/pip install -r requirements.txt
 | `docs/gestion/` | Acta de Constitución, metodología TSP y registros por ciclo (`tsp/`: lanzamientos, postmortems, LOGD, LOGT) |
 | `docs/datos/` | Ciclo 1: criterios, selección, fichas de licencia, inventario, anonimización, geometría, revisión en 3D Slicer e informe de datos |
 | `docs/preprocesamiento/` | Ciclo 2: control de calidad, formato unificado, división por paciente e informe de fuga |
+| `docs/modelo/` | Ciclo 3: ficha y licencias del modelo, configuración, resultados Dice/IoU, medición 1408 y limitaciones |
+| `docs/roi/` | Ciclo 4: cálculo y presentación de la ROI, criterios de aceptación y ejemplos |
+| `entrenamiento/` | División, ajuste fino, evaluación y cuaderno de Colab |
+| `reports/` | Informes generados de evaluación e inferencia |
 | `docs/ejecucion/` | Requisitos (SRS, matriz) y diseño: arquitectura, módulos, pantallas y modelo de datos |
 
 ## Datos

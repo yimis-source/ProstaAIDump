@@ -1,4 +1,12 @@
-numpy>=1.26
+# Versiones probadas: Python 3.12.14, numpy 1.26.4, SimpleITK 2.4.0, nibabel 5.3.2,
+# pytest 8.3.4, torch 2.5.1+cpu, monai 1.4.0 (las del proyecto de referencia).
+numpy>=1.26,<2.0
 SimpleITK>=2.3
 nibabel>=5.2
 pytest>=8.0
+# Ciclo 3: segmentación 3D, modelo e inferencia.
+# Solo CPU: pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
+torch==2.5.1
+monai==1.4.0
+# Ciclo 4: imágenes de la ROI.
+Pillow>=11

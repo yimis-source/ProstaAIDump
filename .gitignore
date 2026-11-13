@@ -31,3 +31,12 @@ htmlcov/
 *.swp
 .idea/
 .vscode/
+
+# Modelos, pesos y salidas pesadas (nunca se versionan)
+/modelos/
+*.pt
+*.pth
+*.ckpt
+/salidas/
+/reports/**/*.nii.gz
+resultados_prosta_ai.zip
