@@ -163,3 +163,44 @@ def test_mayor_componente_y_union_de_zonas(config_prep):
     assert mayor_componente(etiquetas == 1).sum() == 8 ** 3
     prostata = etiquetas_a_prostata(etiquetas, config_prep)
     assert prostata.sum() == 8 ** 3 + 4 * 8 * 8 and prostata[16, 16, 16] == 0
+
+
+# ------------------------------------------------ Ciclo 4: etapa ROI en la cadena
+
+def test_etapa_roi_en_la_cadena_con_estrategia_simulada(estudio_nifti, config_prep, tmp_path):
+    imagen, etiqueta = estudio_nifti
+    pipeline = Segmentation3DPipeline(EstrategiaUmbral(), config_prep)
+    nombres = [n for n, _ in pipeline.etapas()]
+    assert nombres.index(stages.ROI) == nombres.index(stages.SEGMENTACION) + 1
+    assert nombres.index(stages.EVALUACION) == nombres.index(stages.ROI) + 1
+    salida = pipeline.run(PipelineInput([imagen], "NIfTI", [etiqueta], output_dir=tmp_path / "s"))
+    assert salida.mask_original.shape == (40, 40, 16) and salida.mask_original.dtype == np.uint8
+    assert salida.roi.hay_roi and salida.roi.forma == (40, 40, 16) and salida.roi.espaciado_mm == (1.0, 1.0, 2.0)
+    assert salida.roi.n_voxeles == int(salida.mask_original.sum())
+    assert salida.dice_original > 0.8 and 0 < salida.iou_original <= salida.dice_original
+    assert (tmp_path / "s" / "mascara_original.nii.gz").is_file()
+
+
+def test_etapa_roi_sin_referencia_y_sin_roi(estudio_nifti, config_prep):
+    sin_ref = Segmentation3DPipeline(EstrategiaUmbral(), config_prep).run(PipelineInput([estudio_nifti[0]]))
+    assert sin_ref.roi.hay_roi and sin_ref.dice_original is None
+    vacia = Segmentation3DPipeline(EstrategiaUmbral(umbral=1e9), config_prep).run(PipelineInput([estudio_nifti[0]]))
+    assert not vacia.roi.hay_roi and "No se encontró región de interés" in vacia.roi.mensaje
+
+
+def test_generar_roi_con_modelo_unet_minima(modelo_mini, estudio_nifti, tmp_path, monkeypatch):
+    import json
+    import sys
+
+    sys.path.insert(0, str(RAIZ_PRUEBAS / "scripts"))
+    import generar_roi
+
+    monkeypatch.setenv("PROSTA_MODELOS", str(modelo_mini.parent))
+    salida = tmp_path / "roi"
+    codigo = generar_roi.main(["--imagen", str(estudio_nifti[0]), "--modelo", "mini", "--dispositivo", "cpu",
+                               "--referencia", str(estudio_nifti[1]), "--salida", str(salida)])
+    assert codigo == 0
+    datos = json.loads((salida / "resumen_roi.json").read_text(encoding="utf-8"))
+    assert datos["modelo"]["nombre"] == "mini" and "ROI" in datos["tiempos_s"]
+    assert datos["roi"]["forma"] == [40, 40, 16] and any(salida.glob("roi_corte_*.png"))
+    assert generar_roi.main(["--imagen", str(estudio_nifti[0]), "--salida", str(salida)]) == 2  # falta máscara o modelo
