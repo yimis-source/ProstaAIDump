@@ -1,11 +1,13 @@
 """Orden fijo del procesamiento (patrón Template Method).
 
-Control de calidad → preparación → segmentación → evaluación.
+Control de calidad → preparación → segmentación → ROI (Ciclo 4) → evaluación.
 
-La evaluación compara la máscara con la referencia **en el espacio preparado**
-(orientación RAS y vóxeles isotrópicos del modelo): la referencia se lleva a ese
-espacio con vecino más cercano (`prepare_label`). La etapa ROI del Ciclo 4 se
-inserta sobrescribiendo `etapas()`.
+La evaluación del Ciclo 3 compara la máscara con la referencia **en el espacio
+preparado** (orientación RAS y vóxeles isotrópicos del modelo): la referencia se
+lleva a ese espacio con vecino más cercano (`prepare_label`). La etapa ROI lleva
+además la máscara a la rejilla de la imagen original (`mask_to_original_space`) y
+resume la región (`calcular_roi`); si hay referencia, la evaluación añade Dice e IoU
+en ese espacio original (`dice_original`, `iou_original`).
 """
 from __future__ import annotations
 
@@ -22,6 +24,7 @@ from .errors import StageError
 from .evaluation import dice, iou
 from .io import Volume, load_volume, save_nifti
 from .preparation import PreparationConfig, PreparedVolume, prepare_label, prepare_volume
+from .roi import ResumenROI, calcular_roi, dice_iou, mask_to_original_space
 from .progress import PipelineProgress, TimingRecorder
 from .segmentation import SegmentationStrategy
 from .validators import detailed_validation
@@ -43,6 +46,10 @@ class PipelineOutput:
     dice: float | None
     iou: float | None
     durations: dict[str, float]
+    mask_original: np.ndarray | None = None  # máscara en la rejilla de la imagen original
+    roi: ResumenROI | None = None
+    dice_original: float | None = None
+    iou_original: float | None = None
 
 
 @dataclass
@@ -56,6 +63,10 @@ class PipelineContext:
     mask_path: Path | None = None
     dice: float | None = None
     iou: float | None = None
+    mask_original: np.ndarray | None = None
+    roi: ResumenROI | None = None
+    dice_original: float | None = None
+    iou_original: float | None = None
     extra: dict = field(default_factory=dict)
 
 
@@ -66,11 +77,12 @@ class BasePipeline(ABC):
     """Define `run`; las subclases implementan cada etapa."""
 
     def etapas(self) -> list[tuple[str, Etapa]]:
-        """Etapas en orden; el Ciclo 4 inserta la ROI entre la segmentación y la evaluación."""
+        """Etapas en orden; la ROI va entre la segmentación y la evaluación."""
         return [
             (stages.CONTROL_CALIDAD, self.quality_control),
             (stages.PREPARACION, self.prepare),
             (stages.SEGMENTACION, self.segment),
+            (stages.ROI, self.build_roi),
             (stages.EVALUACION, self.evaluate),
         ]
 
@@ -100,6 +112,10 @@ class BasePipeline(ABC):
             dice=ctx.dice,
             iou=ctx.iou,
             durations=dict(timing.durations),
+            mask_original=ctx.mask_original,
+            roi=ctx.roi,
+            dice_original=ctx.dice_original,
+            iou_original=ctx.iou_original,
         )
 
     @abstractmethod
@@ -110,6 +126,9 @@ class BasePipeline(ABC):
 
     @abstractmethod
     def segment(self, inp: PipelineInput, ctx: PipelineContext) -> None: ...
+
+    @abstractmethod
+    def build_roi(self, inp: PipelineInput, ctx: PipelineContext) -> None: ...
 
     @abstractmethod
     def evaluate(self, inp: PipelineInput, ctx: PipelineContext) -> None: ...
@@ -159,6 +178,14 @@ class Segmentation3DPipeline(BasePipeline):
             ctx.mask_path = Path(inp.output_dir) / "mascara_preparada.nii.gz"
             save_nifti(mask, ctx.prepared.affine, ctx.mask_path)
 
+    def build_roi(self, inp: PipelineInput, ctx: PipelineContext) -> None:
+        assert ctx.volume is not None and ctx.prepared is not None and ctx.mask is not None
+        ctx.mask_original = mask_to_original_space(
+            ctx.mask, ctx.prepared.affine, tuple(ctx.volume.data.shape), ctx.volume.affine)
+        ctx.roi = calcular_roi(ctx.mask_original, ctx.volume.spacing)
+        if inp.output_dir is not None:
+            save_nifti(ctx.mask_original, ctx.volume.affine, Path(inp.output_dir) / "mascara_original.nii.gz")
+
     def evaluate(self, inp: PipelineInput, ctx: PipelineContext) -> None:
         if ctx.reference_volume is None or ctx.mask is None:
             return  # sin referencia: dice = iou = None
@@ -167,3 +194,6 @@ class Segmentation3DPipeline(BasePipeline):
             raise StageError(stages.EVALUACION, "La referencia preparada no coincide con la máscara.")
         ctx.dice = dice(ctx.mask, referencia)
         ctx.iou = iou(ctx.mask, referencia)
+        if ctx.mask_original is not None and ctx.reference_volume.data.shape == ctx.mask_original.shape:
+            metricas = dice_iou(ctx.mask_original, ctx.reference_volume.data > 0)
+            ctx.dice_original, ctx.iou_original = metricas["dice"], metricas["iou"]
