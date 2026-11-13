@@ -226,7 +226,7 @@ def main() -> None:
     ap.add_argument("--validar-cada", type=int, default=5)
     ap.add_argument("--semilla", type=int, default=SEMILLA)
     ap.add_argument("--prueba-rapida", action="store_true",
-                    help="1 época en CPU con 2 casos, espaciado 1 mm y ventana de 32 (solo comprueba que todo arranca).")
+                    help="1 época en CPU con 2 casos, espaciado 1 mm y ventana de 64 (solo comprueba que todo arranca).")
     args = ap.parse_args()
 
     fijar_semillas(args.semilla)
@@ -235,7 +235,9 @@ def main() -> None:
     cfg = dataclasses.replace(base_cfg, nombre=args.nombre, version=args.version, pesos="models/model.pt")
     if args.prueba_rapida:
         args.max_epocas, args.dispositivo, args.recortes, args.validar_cada = 1, "cpu", 2, 1
-        cfg = dataclasses.replace(cfg, espaciado=(1.0, 1.0, 1.0), roi_size=(32, 32, 32), sw_batch_size=2, overlap=0.25)
+        # ventana 64: con 32 la UNet de 5 niveles queda con un cuello de 1 vóxel y el Dice de validación
+        # es siempre 0, así que la prueba rápida no detectaría una validación rota (defecto D-05)
+        cfg = dataclasses.replace(cfg, espaciado=(1.0, 1.0, 1.0), roi_size=(64, 64, 64), sw_batch_size=2, overlap=0.25)
     dispositivo = elegir_dispositivo(args.dispositivo)
 
     # división: se crea si no existe y SIEMPRE se verifica antes de entrenar (RC-04)

@@ -37,7 +37,7 @@ python scripts/descargar_modelo.py                    # bundle prostate_mri_anat
    `python -m entrenamiento.evaluar --datos <Task05> --directorio-modelos <modelos>`
 2. **Medición de inferencia (actividad 1408)**: tiempo y memoria pico por estudio:
    `python scripts/medir_inferencia.py --datos <Task05> --directorio-modelos <modelos>` → `reports/inferencia/`.
-3. **Comprobación rápida del entrenamiento en CPU** (1 época, 2 casos, 1 mm, ventana 32; unos 7 s; el modelo no sirve):
+3. **Comprobación rápida del entrenamiento en CPU** (1 época, 2 casos, 1 mm, ventana 64; unos 7 s; el modelo no sirve):
    `python -m entrenamiento.entrenar --prueba-rapida --datos <Task05> --base <modelos>/prostate_mri_anatomy --salida /tmp/prueba`
 4. **Ajuste fino real** (GPU, ver el cuaderno):
    `python -m entrenamiento.entrenar --max-epocas 100 --dispositivo cuda`

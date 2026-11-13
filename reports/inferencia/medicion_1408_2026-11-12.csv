@@ -1,0 +1,7 @@
+caso,megavoxeles_preparados,hilos_torch,t_importacion_s,t_carga_pesos_s,t_preparacion_s,t_segmentacion_s,t_arranque_mas_primera_s,t_segunda_s,rss_tras_importar_mib,rss_tras_cargar_modelo_mib,rss_pico_mib,dice_preparado
+prostate_13,22.1,6,1.55,0.25,1.05,14.07,17.67,16.64,358,656,2021,0.8966
+prostate_17,22.1,6,1.7,0.27,1.14,14.43,18.26,16.42,358,656,1974,0.9035
+prostate_28,17.4,6,1.68,0.27,0.82,9.6,12.91,10.77,358,656,1779,0.8374
+prostate_34,16.7,6,1.68,0.26,0.78,10.86,14.09,12.12,358,655,1736,0.9062
+prostate_44,22.1,6,1.64,0.26,1.04,14.14,17.77,15.67,358,656,1995,0.901
+prostate_02,26.7,6,1.66,0.27,1.27,20.97,25.02,23.17,358,656,2276,0.9025
